@@ -1,0 +1,178 @@
+<style>
+  .main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  .content {
+    background: light-dark(var(--p-surface-50), var(--p-surface-900));
+    border-radius: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .title {
+    font-weight: 700;
+    font-size: 1.75rem;
+    text-align: center;
+    width: 100%;
+    color: var(--p-primary-color);
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-field label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: 0.25rem;
+  }
+
+  .form-field input {
+    width: 100%;
+  }
+
+  .error-text {
+    color: var(--p-red-500);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
+  .submit-button {
+    margin-top: 1rem;
+  }
+
+  .table-container {
+    margin-top: 2rem;
+    width: 100%;
+  }
+
+  .nav-link {
+    margin-bottom: 1rem;
+  }
+</style>
+
+<main class="main">
+  <div class="content">
+    <div class="nav-link">
+      <a routerLink="/" style="color: var(--p-primary-color); text-decoration: none;">
+        ← Back to Students
+      </a>
+    </div>
+
+    <span class="title">University Form</span>
+
+    <div class="error-text" *ngIf="error" style="margin-bottom: 1rem;">
+      {{ error }}
+    </div>
+
+    <form [formGroup]="universityForm" (ngSubmit)="onSubmit()">
+      <div class="form-field">
+        <label for="name">University Name</label>
+        <input
+          id="name"
+          type="text"
+          pInputText
+          formControlName="name"
+          placeholder="Enter university name"
+        />
+        <span class="error-text" *ngIf="getFieldError('name')">
+          {{ getFieldError("name") }}
+        </span>
+      </div>
+
+      <div class="form-field">
+        <label for="location">Location</label>
+        <input
+          id="location"
+          type="text"
+          pInputText
+          formControlName="location"
+          placeholder="Enter location"
+        />
+        <span class="error-text" *ngIf="getFieldError('location')">
+          {{ getFieldError("location") }}
+        </span>
+      </div>
+
+      <div class="submit-button w-full" style="display: flex; gap: 0.5rem;">
+        <p-button 
+          type="submit" 
+          [label]="editingUniversity ? 'Update University' : 'Add University'" 
+          [loading]="loading"
+          [disabled]="loading"
+        ></p-button>
+        <p-button 
+          *ngIf="editingUniversity"
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          [outlined]="true"
+          (click)="cancelEdit()"
+          [disabled]="loading"
+        ></p-button>
+      </div>
+    </form>
+
+    <div class="table-container">
+      <p-table 
+        [value]="universities" 
+        [tableStyle]="{ 'min-width': '100%' }"
+        [loading]="loading"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Name</th>
+            <th>Location</th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-university>
+          <tr>
+            <td>{{ university.name }}</td>
+            <td>{{ university.location }}</td>
+            <td>
+              <div style="display: flex; gap: 0.5rem;">
+                <p-button
+                  icon="pi pi-pencil"
+                  severity="info"
+                  [rounded]="true"
+                  [outlined]="true"
+                  (click)="editUniversity(university)"
+                  [disabled]="loading"
+                />
+                <p-button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  [rounded]="true"
+                  [outlined]="true"
+                  (click)="deleteUniversity(university)"
+                  [disabled]="loading"
+                />
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="3" style="text-align: center; padding: 2rem;">
+              No universities found
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</main>
+
