@@ -1,8 +1,10 @@
 <p-card header="Login" subheader="Use Google or email/password">
-  <p-message *ngIf="errorMsg" severity="error" [text]="errorMsg"></p-message>
+  @if (errorMsg) {
+    <p-message severity="error" [text]="errorMsg"></p-message>
+  }
 
-  <p-tabView>
-    <p-tabPanel header="Google">
+  <p-tabs>
+    <p-tabpanel header="Google">
       <p>Redirect to Google login and come back signed in.</p>
       <p-divider></p-divider>
       <button
@@ -12,9 +14,9 @@
         icon="pi pi-google"
         (click)="loginWithGoogleRedirect()">
       </button>
-    </p-tabPanel>
+    </p-tabpanel>
 
-    <p-tabPanel header="Email Login">
+    <p-tabpanel header="Email Login">
       <div class="p-fluid">
         <label for="lemail">Email</label>
         <input id="lemail" pInputText type="email" [(ngModel)]="loginEmail" />
@@ -28,9 +30,9 @@
 
         <button pButton type="button" label="Login" icon="pi pi-sign-in" (click)="loginLocal()"></button>
       </div>
-    </p-tabPanel>
+    </p-tabpanel>
 
-    <p-tabPanel header="Sign Up">
+    <p-tabpanel header="Sign Up">
       <div class="p-fluid">
         <label for="semail">Email</label>
         <input id="semail" pInputText type="email" [(ngModel)]="signupEmail" />
@@ -49,6 +51,6 @@
 
         <button pButton type="button" label="Create Account" icon="pi pi-user-plus" (click)="signupLocal()"></button>
       </div>
-    </p-tabPanel>
-  </p-tabView>
+    </p-tabpanel>
+  </p-tabs>
 </p-card>

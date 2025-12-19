@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { CardModule } from 'primeng/card';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
@@ -18,17 +18,16 @@ import { environment } from '../environments/environment';
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     FormsModule,
     CardModule,
-    TabViewModule,
+    TabsModule,
     ButtonModule,
     InputTextModule,
     PasswordModule,
     DividerModule,
-    MessageModule,
-  ],
+    MessageModule
+],
   templateUrl: './login.component.html',
 })
 export class LoginComponent implements OnInit {

@@ -11,7 +11,9 @@
 
   <p-divider></p-divider>
 
-  <div *ngIf="!isLoggedIn()">
-    <button pButton type="button" label="Login to Reserve" icon="pi pi-sign-in" [routerLink]="['/login']"></button>
-  </div>
+  @if (!isLoggedIn()) {
+    <div>
+      <button pButton type="button" label="Login to Reserve" icon="pi pi-sign-in" [routerLink]="['/login']"></button>
+    </div>
+  }
 </p-card>

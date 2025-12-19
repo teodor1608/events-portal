@@ -4,22 +4,24 @@
   </ng-template>
 
   <ng-template pTemplate="end">
-    <button
-      *ngIf="!isLoggedIn()"
-      pButton
-      type="button"
-      label="Login"
-      icon="pi pi-sign-in"
-      [routerLink]="['/login']">
-    </button>
+    @if (!isLoggedIn()) {
+      <button
+        pButton
+        type="button"
+        label="Login"
+        icon="pi pi-sign-in"
+        [routerLink]="['/login']">
+      </button>
+    }
 
-    <button
-      *ngIf="isLoggedIn()"
-      pButton
-      type="button"
-      label="Logout"
-      icon="pi pi-sign-out"
-      (click)="logout()">
-    </button>
+    @if (isLoggedIn()) {
+      <button
+        pButton
+        type="button"
+        label="Logout"
+        icon="pi pi-sign-out"
+        (click)="logout()">
+      </button>
+    }
   </ng-template>
 </p-toolbar>
