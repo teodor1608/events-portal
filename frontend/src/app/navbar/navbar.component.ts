@@ -14,6 +14,19 @@ import { ButtonModule } from 'primeng/button';
 export class NavbarComponent {
   constructor(private router: Router) {}
 
+  isAdmin(): boolean {
+    const token = localStorage.getItem('jwt');
+    if (!token) return false;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return payload?.role === 'ADMIN';
+    } catch {
+      return false;
+    }
+  }
+
+
   isLoggedIn(): boolean {
     return !!localStorage.getItem('jwt');
   }

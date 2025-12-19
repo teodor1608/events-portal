@@ -1,0 +1,64 @@
+<p-card header="Events" subheader="Browse and filter events">
+  <div class="p-fluid">
+    <div class="p-formgrid p-grid">
+      <div class="p-field p-col-12 p-md-4">
+        <label>Type</label>
+        <p-select
+          [options]="typeOptions"
+          [(ngModel)]="selectedType"
+          optionLabel="label"
+          optionValue="value"
+          (onChange)="load()">
+        </p-select>
+      </div>
+
+      <div class="p-field p-col-12 p-md-4">
+        <label>From</label>
+        <p-datepicker [(ngModel)]="fromDate" [showIcon]="true" (onSelect)="load()"></p-datepicker>
+      </div>
+
+      <div class="p-field p-col-12 p-md-4">
+        <label>To</label>
+        <p-datepicker [(ngModel)]="toDate" [showIcon]="true" (onSelect)="load()"></p-datepicker>
+      </div>
+    </div>
+
+    <p-divider></p-divider>
+
+    <button pButton type="button" label="Clear filters" icon="pi pi-filter-slash" (click)="clearFilters()"></button>
+  </div>
+
+  <p-divider></p-divider>
+
+  <p-dataview [value]="events" [paginator]="true" [rows]="6" [loading]="loading" layout="grid">
+    <ng-template #grid let-items>
+      <div class="p-grid">
+        <div class="p-col-12 p-md-4" *ngFor="let e of items">
+          <p-card [header]="e.title" [subheader]="when(e.startsAt)">
+            <div *ngIf="e.imageUrl">
+              <img [src]="e.imageUrl" [alt]="e.title" style="width: 100%; max-width: 500px; border-radius: 6px;" />
+              <p-divider></p-divider>
+            </div>
+
+            <div>
+              <div><b>Type:</b> {{ e.type }}</div>
+              <div><b>Where:</b> {{ e.city }} · {{ e.venue }}</div>
+              <div><b>Price:</b> €{{ euros(e.priceCents) }}</div>
+              <div><b>Seats:</b> {{ e.availableSeats }} / {{ e.totalSeats }}</div>
+            </div>
+
+            <p-divider></p-divider>
+
+            <button
+              pButton
+              type="button"
+              label="View details"
+              icon="pi pi-arrow-right"
+              [routerLink]="['/events', e.id]">
+            </button>
+          </p-card>
+        </div>
+      </div>
+    </ng-template>
+  </p-dataview>
+</p-card>

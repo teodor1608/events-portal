@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const AppDataSource = require("../config/database");
+const { requireAuth, requireRole } = require("../middleware/auth");
+
 
 const ALLOWED_TYPES = new Set([
   "music",
@@ -16,7 +18,7 @@ const ALLOWED_TYPES = new Set([
 const ALLOWED_STATUS = new Set(["DRAFT", "SCHEDULED", "CANCELLED", "COMPLETED"]);
 
 // ADMIN: Create event
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, requireRole("ADMIN"), async (req, res) => {
   try {
     const {
       title,
@@ -123,7 +125,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // ADMIN: Update event
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireAuth, requireRole("ADMIN"), async (req, res) => {
   try {
     const eventRepo = AppDataSource.getRepository("Event");
     const event = await eventRepo.findOne({
@@ -197,7 +199,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // ADMIN: Delete event
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, requireRole("ADMIN"), async (req, res) => {
   try {
     const eventRepo = AppDataSource.getRepository("Event");
     const event = await eventRepo.findOne({

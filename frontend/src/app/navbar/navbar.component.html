@@ -23,5 +23,17 @@
         (click)="logout()">
       </button>
     }
+
+    @if (isAdmin()) {
+      <button
+        pButton
+        type="button"
+        label="Admin"
+        icon="pi pi-shield"
+        [routerLink]="['/admin/events/new']">
+      </button>
+    }
+
+
   </ng-template>
 </p-toolbar>
