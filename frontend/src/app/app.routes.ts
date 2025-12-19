@@ -1,14 +1,14 @@
 import { Routes } from '@angular/router';
-import { UniversityComponent } from './university/university.component';
-import { StudentsComponent } from './students/students.component';
+import { HomeComponent } from './home/home.component';
+import { LoginComponent } from './login/login.component';
+import { LoginCallbackComponent } from './login/callback/login-callback.component';
 
 export const routes: Routes = [
   {
     path: '',
-    component: StudentsComponent
+    component: HomeComponent 
   },
-  {
-    path: 'university',
-    component: UniversityComponent
-  }
+  { path: 'login', component: LoginComponent },
+  { path: 'login/callback', component: LoginCallbackComponent }
+
 ];

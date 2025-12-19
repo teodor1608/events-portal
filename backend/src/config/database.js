@@ -1,15 +1,14 @@
 const { DataSource } = require("typeorm");
-const University = require("../entities/University");
-const Student = require("../entities/Student");
-// TODO: Import Subject entity
-// const Subject = require("../entities/Subject");
+const Event = require("../entities/Event");
+const Reservation = require("../entities/Reservation");
+const User = require("../entities/User");
 
 const AppDataSource = new DataSource({
   type: "sqlite",
   database: "database.sqlite",
   synchronize: true,
   logging: false,
-  entities: [University, Student], // TODO: Add Subject to this array
+  entities: [Event, Reservation, User],
 });
 
 module.exports = AppDataSource;

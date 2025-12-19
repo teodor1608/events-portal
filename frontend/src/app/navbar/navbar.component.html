@@ -1,0 +1,25 @@
+<p-toolbar>
+  <ng-template pTemplate="start">
+    <button pButton type="button" label="Events Portal" icon="pi pi-calendar" [routerLink]="['/']"></button>
+  </ng-template>
+
+  <ng-template pTemplate="end">
+    <button
+      *ngIf="!isLoggedIn()"
+      pButton
+      type="button"
+      label="Login"
+      icon="pi pi-sign-in"
+      [routerLink]="['/login']">
+    </button>
+
+    <button
+      *ngIf="isLoggedIn()"
+      pButton
+      type="button"
+      label="Logout"
+      icon="pi pi-sign-out"
+      (click)="logout()">
+    </button>
+  </ng-template>
+</p-toolbar>

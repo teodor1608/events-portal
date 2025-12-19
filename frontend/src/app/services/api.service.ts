@@ -4,89 +4,107 @@ import { Observable } from 'rxjs';
 
 const API_URL = 'http://localhost:3000/api';
 
-export interface Student {
+export type EventType =
+  | 'music' | 'sports' | 'theatre' | 'festival'
+  | 'exhibition' | 'workshop' | 'community' | 'other';
+
+export type EventStatus = 'DRAFT' | 'SCHEDULED' | 'CANCELLED' | 'COMPLETED';
+
+export interface Event {
   id?: number;
-  facultyNumber: string;
-  firstName: string;
-  middleName?: string;
-  lastName: string;
-  universityId?: number;
-  university?: {
-    id: number;
-    name: string;
-    location: string;
-  };
+  title: string;
+  description?: string | null;
+  type: EventType;
+  startsAt: string;   // ISO string
+  endsAt?: string | null;
+  city: string;
+  venue: string;
+  imageUrl?: string | null;
+  priceCents: number;
+  currency?: 'EUR';
+  totalSeats: number;
+  availableSeats?: number;
+  status: EventStatus;
+  isPublished: boolean;
 }
 
-export interface University {
+export type ReservationStatus = 'HELD' | 'PAID' | 'EXPIRED' | 'CANCELLED';
+
+export interface Reservation {
   id: number;
-  name: string;
-  location: string;
+  eventId: number;
+  userId: number;
+  qty: number;
+  status: ReservationStatus;
+  holdExpiresAt: string;
+  createdAt: string;
+  event?: Event | null;
 }
 
-// TODO: Add Subject interface
-// export interface Subject {
-//   id?: number;
-//   name: string;
-//   code: string;
-//   credits: number;
-//   students?: Student[]; // Optional, for when relation is loaded
-// }
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   constructor(private http: HttpClient) {}
-
-  // Student endpoints
-  getStudents(): Observable<Student[]> {
-    return this.http.get<Student[]>(`${API_URL}/students`);
+  
+  getEvents(params?: { from?: string; to?: string; type?: EventType }): Observable<Event[]> {
+    const qs = new URLSearchParams();
+    if (params?.from) qs.set('from', params.from);
+    if (params?.to) qs.set('to', params.to);
+    if (params?.type) qs.set('type', params.type);
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    return this.http.get<Event[]>(`${API_URL}/events${suffix}`);
   }
 
-  getStudent(id: number): Observable<Student> {
-    return this.http.get<Student>(`${API_URL}/students/${id}`);
+  getEvent(id: number): Observable<Event> {
+    return this.http.get<Event>(`${API_URL}/events/${id}`);
   }
 
-  createStudent(student: Omit<Student, 'id'>): Observable<Student> {
-    return this.http.post<Student>(`${API_URL}/students`, student);
+  createEvent(event: Omit<Event, 'id' | 'availableSeats' | 'currency'>): Observable<Event> {
+    return this.http.post<Event>(`${API_URL}/events`, event);
   }
 
-  updateStudent(id: number, student: Partial<Student>): Observable<Student> {
-    return this.http.put<Student>(`${API_URL}/students/${id}`, student);
+  updateEvent(id: number, event: Partial<Event>): Observable<Event> {
+    return this.http.put<Event>(`${API_URL}/events/${id}`, event);
   }
 
-  deleteStudent(id: number): Observable<void> {
-    return this.http.delete<void>(`${API_URL}/students/${id}`);
+  deleteEvent(id: number): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/events/${id}`);
   }
 
-  // University endpoints
-  getUniversities(): Observable<University[]> {
-    return this.http.get<University[]>(`${API_URL}/universities`);
+  holdReservation(eventId: number, qty: number): Observable<Reservation> {
+    return this.http.post<Reservation>(`${API_URL}/reservations`, { eventId, qty });
   }
 
-  getUniversity(id: number): Observable<University> {
-    return this.http.get<University>(`${API_URL}/universities/${id}`);
+  getMyReservations(): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${API_URL}/users/me/reservations`);
   }
-
-  createUniversity(university: Omit<University, 'id'>): Observable<University> {
-    return this.http.post<University>(`${API_URL}/universities`, university);
-  }
-
-  updateUniversity(id: number, university: Partial<University>): Observable<University> {
-    return this.http.put<University>(`${API_URL}/universities/${id}`, university);
-  }
-
-  deleteUniversity(id: number): Observable<void> {
-    return this.http.delete<void>(`${API_URL}/universities/${id}`);
-  }
-
-  // TODO: Implement Subject endpoints
-  // Follow the same pattern as Student and University methods above
-  // getSubjects(): Observable<Subject[]>
-  // getSubject(id: number): Observable<Subject>
-  // createSubject(subject: Omit<Subject, 'id'>): Observable<Subject>
-  // updateSubject(id: number, subject: Partial<Subject>): Observable<Subject>
-  // deleteSubject(id: number): Observable<void>
 }
 
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthApiService {
+  constructor(private http: HttpClient) {}
+
+  googleLogin(idToken: string): Observable<{ token: string }> {
+    return this.http.post<{ token: string }>(`${API_URL}/auth/google`, { idToken });
+  }
+
+  login(email: string, password: string): Observable<{ token: string }> {
+    return this.http.post<{ token: string }>(`${API_URL}/auth/login`, { email, password });
+  }
+
+  register(email: string, password: string): Observable<{ token: string }> {
+    return this.http.post<{ token: string }>(`${API_URL}/auth/register`, { email, password });
+  }
+
+  googleLoginRedirect(code: string) {
+  return this.http.post<{ token: string }>(
+    `${API_URL}/auth/google/redirect`,
+      { code }
+    );
+  }
+
+}

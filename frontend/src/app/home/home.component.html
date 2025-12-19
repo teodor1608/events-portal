@@ -1,0 +1,17 @@
+<p-card header="Welcome to Events Portal" subheader="Discover and book local events.">
+  <p>
+    Browse events, reserve seats, and get confirmations.
+  </p>
+
+  <p-divider></p-divider>
+
+  <div>
+    <button pButton type="button" label="Browse Events" icon="pi pi-search" [routerLink]="['/events']"></button>
+  </div>
+
+  <p-divider></p-divider>
+
+  <div *ngIf="!isLoggedIn()">
+    <button pButton type="button" label="Login to Reserve" icon="pi pi-sign-in" [routerLink]="['/login']"></button>
+  </div>
+</p-card>

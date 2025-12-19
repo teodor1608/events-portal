@@ -1,11 +1,15 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const AppDataSource = require("./config/database");
-const universityRoutes = require("./routes/universityRoutes");
-const studentRoutes = require("./routes/studentRoutes");
-// TODO: Import subject routes
-// const subjectRoutes = require("./routes/subjectRoutes");
+const eventRoutes = require("./routes/eventRoutes");
+const reservationRoutes = require("./routes/reservationRoutes");
+const authRoutes = require("./routes/authRoutes");
+const googleAuthRoutes = require("./routes/googleAuthRoutes");
+const userRoutes = require("./routes/userRoutes");
+const { startExpireReservationsJob } = require("./jobs/expireReservations");
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,37 +18,27 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/api/universities", universityRoutes);
-app.use("/api/students", studentRoutes);
-// TODO: Register subject routes
-// app.use("/api/subjects", subjectRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/reservations", reservationRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/auth", googleAuthRoutes);
+app.use("/api/users", userRoutes);
+
 
 app.get("/", (req, res) => {
   res.json({
     message: "Student-University API Server",
     endpoints: {
-      universities: {
-        "POST /api/universities": "Create a new university",
-        "GET /api/universities": "Get all universities",
-        "GET /api/universities/:id": "Get a university by ID",
-        "PUT /api/universities/:id": "Update a university",
-        "DELETE /api/universities/:id": "Delete a university",
+      events: {
+        "POST /api/events": "Create a new event (admin for now)",
+        "GET /api/events?from=&to=&type=": "List public events with filters",
+        "GET /api/events/:id": "Get public event details",
+        "PUT /api/events/:id": "Update an event (admin for now)",
+        "DELETE /api/events/:id": "Delete an event (admin for now)",
       },
-      students: {
-        "POST /api/students": "Create a new student",
-        "GET /api/students": "Get all students",
-        "GET /api/students/:id": "Get a student by ID",
-        "PUT /api/students/:id": "Update a student",
-        "DELETE /api/students/:id": "Delete a student",
+      reservations: {
+        "POST /api/reservations": "Hold seats for an event",
       },
-      // TODO: Add subjects endpoints documentation
-      // subjects: {
-      //   "POST /api/subjects": "Create a new subject",
-      //   "GET /api/subjects": "Get all subjects",
-      //   "GET /api/subjects/:id": "Get a subject by ID",
-      //   "PUT /api/subjects/:id": "Update a subject",
-      //   "DELETE /api/subjects/:id": "Delete a subject",
-      // },
     },
   });
 });
@@ -52,6 +46,12 @@ app.get("/", (req, res) => {
 AppDataSource.initialize()
   .then(() => {
     console.log("Database connected successfully");
+    try {
+      startExpireReservationsJob();
+      console.log("Started expire reservations job");
+    } catch (err) {
+      console.error("Failed to start expire reservations job:", err.message);
+    }
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
     });
