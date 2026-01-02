@@ -4,6 +4,8 @@ const Stripe = require("stripe");
 
 const AppDataSource = require("../config/database");
 const { requireAuth } = require("../middleware/auth");
+const { sendReservationPaidEmail } = require("../utils/email");
+
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripe = new Stripe(stripeSecretKey);
@@ -130,7 +132,6 @@ router.post("/webhook", async (req, res) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Handle the event
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
 
@@ -140,22 +141,74 @@ router.post("/webhook", async (req, res) => {
     if (reservationId && userId) {
       try {
         const reservationRepo = AppDataSource.getRepository("Reservation");
+        const userRepo = AppDataSource.getRepository("User");
+        const eventRepo = AppDataSource.getRepository("Event");
 
         const reservation = await reservationRepo.findOne({
           where: { id: parseInt(reservationId, 10) },
         });
 
-        if (reservation && reservation.status !== "PAID") {
+        if (!reservation) {
+          console.warn(
+            `Webhook: reservation ${reservationId} not found for checkout.session.completed`
+          );
+          return res.json({ received: true });
+        }
+
+        // mark as PAID if not already
+        if (reservation.status !== "PAID") {
           reservation.status = "PAID";
           await reservationRepo.save(reservation);
           console.log(`Reservation ${reservation.id} marked PAID via webhook`);
+        } else {
+          console.log(
+            `Reservation ${reservation.id} already PAID, skipping status update`
+          );
+        }
+
+        const user = await userRepo.findOne({
+          where: { id: parseInt(userId, 10) },
+        });
+
+        const eventEntity = await eventRepo.findOne({
+          where: { id: reservation.eventId },
+        });
+
+        if (user && user.email && eventEntity) {
+          // Fire-and-forget, don't delay Stripe's 200
+          sendReservationPaidEmail({
+            to: user.email,
+            user,
+            reservation,
+            event: eventEntity,
+          })
+            .then(() => {
+              console.log(
+                `Email receipt with QR sent for reservation ${reservation.id}`
+              );
+            })
+            .catch((err) => {
+              console.error(
+                `Failed to send email for reservation ${reservation.id}:`,
+                err
+              );
+            });
+        } else {
+          console.warn(
+            `Webhook: cannot send email for reservation ${reservationId} (missing user/email or event)`
+          );
         }
       } catch (err) {
         console.error("Webhook reservation update error:", err);
       }
+    } else {
+      console.warn(
+        "checkout.session.completed received without reservationId/userId metadata"
+      );
     }
   }
 
+  // Always acknowledge to Stripe so it doesn’t retry
   res.json({ received: true });
 });
 

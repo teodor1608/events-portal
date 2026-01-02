@@ -10,6 +10,7 @@ const googleAuthRoutes = require("./routes/googleAuthRoutes");
 const userRoutes = require("./routes/userRoutes");
 const { startExpireReservationsJob } = require("./jobs/expireReservations");
 const paymentRoutes = require("./routes/paymentRoutes");
+const checkinRoutes = require("./routes/checkinRoutes");
 
 
 const app = express();
@@ -26,7 +27,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/auth", googleAuthRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/payments", paymentRoutes);
-
+app.use("/api/checkin", checkinRoutes);
 
 
 app.get("/", (req, res) => {

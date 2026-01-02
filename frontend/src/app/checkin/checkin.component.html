@@ -1,0 +1,30 @@
+<div class="checkin-page">
+  <h1>Ticket Check-in</h1>
+  <div class="checkin-card">
+    <div *ngIf="reservationIdInput; else noId" class="info-row">
+      <label>Reservation ID</label>
+      <span class="reservation-id">{{ reservationIdInput }}</span>
+    </div>
+    <ng-template #noId>
+      <div class="info-row">
+        <label>Reservation ID</label>
+        <span class="reservation-id missing">No reservation ID provided in URL</span>
+      </div>
+    </ng-template>
+
+    <button (click)="checkIn()" [disabled]="loading || !reservationIdInput" class="checkin-btn">
+      {{ loading ? 'Checking…' : 'Check in' }}
+    </button>
+
+    <div *ngIf="message" class="message">
+      <strong>{{ message }}</strong>
+    </div>
+
+    <div *ngIf="reservation" class="reservation-info">
+      <p>Reservation #{{ reservation.id }}</p>
+      <p>Status: <code>{{ reservation.status }}</code></p>
+      <p>Quantity: {{ reservation.qty }}</p>
+      <p>Event ID: {{ reservation.eventId }}</p>
+    </div>
+  </div>
+</div>

@@ -106,7 +106,10 @@ export class ApiService {
     );
   }
 
-  // Account-related actions
+  checkinReservation(reservationId: number) : Observable<Reservation> {
+    return this.http.post<Reservation>(`${API_URL}/checkin`, { reservationId });
+  }
+
   setPassword(password: string) {
     return this.http.post(`${API_URL}/auth/set-password`, { password });
   }

@@ -12,6 +12,7 @@ import { PaymentCancelComponent } from './payment-cancel/payment-cancel.componen
 import { AdminEditEventComponent } from './admin-edit-event/admin-edit-event.component';
 import { AdminEventsComponent } from './admin-events/admin-events.component';
 import { AccountComponent } from './account/account.component';
+import { CheckinComponent } from './checkin/checkin.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -26,4 +27,5 @@ export const routes: Routes = [
   { path: 'admin/events', component: AdminEventsComponent },
   { path: 'admin/events/:id/edit', component: AdminEditEventComponent },
   { path: 'account', component: AccountComponent },
+  { path: 'checkin', component: CheckinComponent, canActivate: [adminGuard] },
 ];

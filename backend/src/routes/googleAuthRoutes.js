@@ -126,12 +126,6 @@ router.post("/google/redirect", async (req, res) => {
     }
 
     if (!user.googleId) {
-      // There is an existing user with this email but no googleId.
-      // Do NOT auto-link here — ask the user to confirm linking by signing in.
-      // Return a signal to the client along with the idToken so the client can
-      // offer a confirmation flow. The client should then prompt the user to
-      // sign in with their local password and call POST /api/auth/google/link
-      // with the same idToken to perform the link.
       return res.json({ needsLink: true, email: user.email, idToken });
     }
 
