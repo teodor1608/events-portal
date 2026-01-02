@@ -1,0 +1,72 @@
+<p-card header="Admin · Edit Event">
+  <p-message *ngIf="errorMsg" severity="error" [text]="errorMsg"></p-message>
+  <p-message *ngIf="successMsg" severity="success" [text]="successMsg"></p-message>
+
+  <div *ngIf="model" class="p-fluid">
+    <label>Title</label>
+    <input pInputText [(ngModel)]="model.title" />
+
+    <p-divider></p-divider>
+
+    <label>Description</label>
+    <textarea pInputTextarea rows="4" [(ngModel)]="model.description"></textarea>
+
+    <p-divider></p-divider>
+
+    <label>Type</label>
+    <p-select [options]="typeOptions" optionLabel="label" optionValue="value" [(ngModel)]="model.type"></p-select>
+
+    <p-divider></p-divider>
+
+    <label>Starts at</label>
+    <p-datepicker [(ngModel)]="model.startsAt" [showIcon]="true" [showTime]="true"></p-datepicker>
+
+    <p-divider></p-divider>
+
+    <label>Ends at</label>
+    <p-datepicker [(ngModel)]="model.endsAt" [showIcon]="true" [showTime]="true"></p-datepicker>
+
+    <p-divider></p-divider>
+
+    <label>City</label>
+    <input pInputText [(ngModel)]="model.city" />
+
+    <p-divider></p-divider>
+
+    <label>Venue</label>
+    <input pInputText [(ngModel)]="model.venue" />
+
+    <p-divider></p-divider>
+
+    <label>Image URL</label>
+    <input pInputText [(ngModel)]="model.imageUrl" />
+
+    <p-divider></p-divider>
+
+    <label>Price (EUR cents)</label>
+    <p-inputNumber [(ngModel)]="model.priceCents" [min]="0" [step]="100"></p-inputNumber>
+
+    <p-divider></p-divider>
+
+    <label>Total seats</label>
+    <p-inputNumber [(ngModel)]="model.totalSeats" [min]="1"></p-inputNumber>
+
+    <p-divider></p-divider>
+
+    <label>Status</label>
+    <p-select [options]="statusOptions" optionLabel="label" optionValue="value" [(ngModel)]="model.status"></p-select>
+
+    <p-divider></p-divider>
+
+    <p-checkbox [(ngModel)]="model.isPublished" binary="true" inputId="pub"></p-checkbox>
+    <label for="pub">Published</label>
+
+    <p-divider></p-divider>
+
+    <button pButton type="button" label="Save changes" icon="pi pi-save" (click)="submit()"></button>
+
+    <p-divider></p-divider>
+
+    <button pButton type="button" label="Back to list" class="p-button-text" (click)="goBack()"></button>
+  </div>
+</p-card>

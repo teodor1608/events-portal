@@ -1,0 +1,23 @@
+<p-card header="Payment Status">
+  <p-message *ngIf="loading" severity="info" text="Confirming payment..."></p-message>
+
+  <p-message *ngIf="!loading && !errorMsg && status === 'PAID'"
+             severity="success"
+             text="Payment successful! Your reservation is now paid.">
+  </p-message>
+
+  <p-message *ngIf="!loading && errorMsg"
+             severity="error"
+             [text]="errorMsg">
+  </p-message>
+
+  <p-divider></p-divider>
+
+  <button
+    pButton
+    type="button"
+    label="View my reservations"
+    icon="pi pi-ticket"
+    (click)="goToReservations()">
+  </button>
+</p-card>

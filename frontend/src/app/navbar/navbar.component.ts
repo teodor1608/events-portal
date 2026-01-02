@@ -10,6 +10,18 @@ import { ButtonModule } from 'primeng/button';
   standalone: true,
   imports: [RouterModule, ToolbarModule, ButtonModule],
   templateUrl: './navbar.component.html',
+  styles: [
+    `
+    :host { display:block; margin-bottom:1rem; }
+    .brand { display:flex; align-items:center; gap:0.5rem; text-decoration:none; color:inherit; font-weight:600; font-size:1.05rem; }
+    .brand .pi { font-size:1.25rem; }
+    .nav-actions { display:flex; gap:0.5rem; align-items:center; }
+    .toolbar-button { padding-left:0.6rem; padding-right:0.6rem; }
+    @media (max-width:600px) {
+      .nav-actions { flex-direction:column; align-items:flex-end; }
+    }
+    `,
+  ],
 })
 export class NavbarComponent {
   constructor(private router: Router) {}

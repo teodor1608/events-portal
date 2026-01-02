@@ -15,7 +15,7 @@ router.get("/me/reservations", requireAuth, async (req, res) => {
       order: { createdAt: "DESC" },
     });
 
-    // attach event summary (no ORM relations required)
+    // attach event summary
     const eventIds = [...new Set(reservations.map(r => r.eventId))];
     let events = [];
     if (eventIds.length) {

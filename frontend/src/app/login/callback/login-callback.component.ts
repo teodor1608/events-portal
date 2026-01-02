@@ -23,9 +23,23 @@ export class LoginCallbackComponent implements OnInit {
     }
 
     this.auth.googleLoginRedirect(code).subscribe({
-      next: ({ token }) => {
-        localStorage.setItem('jwt', token);
-        this.router.navigateByUrl('/');
+      next: (res: any) => {
+        if (res.needsLink) {
+          // Store idToken and email temporarily for the link flow (sessionStorage is cleared after use)
+          sessionStorage.setItem('googleLinkIdToken', res.idToken);
+          sessionStorage.setItem('googleLinkEmail', res.email);
+          this.router.navigateByUrl('/account');
+          return;
+        }
+
+        localStorage.setItem('jwt', res.token);
+        // If account was linked or newly created and has no password, encourage setting a password
+        if (res.linked || (!res.hasPassword && res.created)) {
+          // Redirect to account page so user can set a password
+          this.router.navigateByUrl('/account');
+        } else {
+          this.router.navigateByUrl('/');
+        }
       },
       error: () => {
         this.router.navigateByUrl('/login');

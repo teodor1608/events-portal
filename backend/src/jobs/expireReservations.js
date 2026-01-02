@@ -45,7 +45,7 @@ async function expireReservations() {
 }
 
 function startExpireReservationsJob() {
-  // run every 30 seconds (fine for dev)
+  // run every 30 seconds
   setInterval(() => expireReservations().catch(console.error), 30_000);
 }
 

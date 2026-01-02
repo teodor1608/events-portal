@@ -1,0 +1,51 @@
+<p-card *ngIf="event" [header]="event.title" [subheader]="when(event.startsAt)">
+  <p-message *ngIf="errorMsg" severity="error" [text]="errorMsg"></p-message>
+  <p-message *ngIf="successMsg" severity="success" [text]="successMsg"></p-message>
+
+  <div *ngIf="event.imageUrl">
+    <img [src]="event.imageUrl" [alt]="event.title" style="width: 100%; border-radius: 6px;" />
+    <p-divider></p-divider>
+  </div>
+
+  <div>
+    <p><b>Type:</b> {{ event.type }}</p>
+    <p *ngIf="event.description"><b>Description:</b> {{ event.description }}</p>
+    <p><b>Where:</b> {{ event.city }} · {{ event.venue }}</p>
+    <p><b>Price:</b> €{{ euros(event.priceCents) }}</p>
+    <p><b>Seats:</b> {{ event.availableSeats }} / {{ event.totalSeats }}</p>
+    <p><b>Status:</b> {{ event.status }}</p>
+  </div>
+
+  <p-divider></p-divider>
+
+  <div *ngIf="!isLoggedIn()">
+    <p-message severity="info" text="Log in to reserve seats."></p-message>
+    <button pButton type="button" label="Go to login" icon="pi pi-sign-in" [routerLink]="['/login']"></button>
+  </div>
+
+  <div *ngIf="isLoggedIn()">
+    <div>
+      <label>Quantity</label>
+      <p-inputNumber [(ngModel)]="qty" [min]="1" [max]="event.availableSeats" [showButtons]="true"></p-inputNumber>
+    </div>
+
+    <p-divider></p-divider>
+
+    <button
+      pButton
+      type="button"
+      label="Reserve seats"
+      icon="pi pi-ticket"
+      (click)="reserve()"
+      [disabled]="!canReserve()">
+    </button>
+  </div>
+
+  <p-divider></p-divider>
+
+  <button pButton type="button" label="Back to events" class="p-button-text" [routerLink]="['/events']"></button>
+</p-card>
+
+<p-card *ngIf="!event && !loading && !errorMsg" header="Loading">
+  Loading event...
+</p-card>

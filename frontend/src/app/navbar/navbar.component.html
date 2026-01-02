@@ -1,39 +1,63 @@
 <p-toolbar>
   <ng-template pTemplate="start">
-    <button pButton type="button" label="Events Portal" icon="pi pi-calendar" [routerLink]="['/']"></button>
+    <a class="brand" [routerLink]="['/']">
+      <i class="pi pi-calendar"></i>
+      <span class="brand-text">Events Portal</span>
+    </a>
   </ng-template>
 
   <ng-template pTemplate="end">
-    @if (!isLoggedIn()) {
-      <button
-        pButton
-        type="button"
-        label="Login"
-        icon="pi pi-sign-in"
-        [routerLink]="['/login']">
-      </button>
-    }
+    <div class="nav-actions">
+      @if (!isLoggedIn()) {
+        <button
+          pButton
+          type="button"
+          label="Login"
+          icon="pi pi-sign-in"
+          [routerLink]="['/login']"
+          class="toolbar-button">
+        </button>
+      }
 
-    @if (isLoggedIn()) {
-      <button
-        pButton
-        type="button"
-        label="Logout"
-        icon="pi pi-sign-out"
-        (click)="logout()">
-      </button>
-    }
+      @if (isLoggedIn()) {
+        <button
+          pButton
+          type="button"
+          label="My Reservations"
+          icon="pi pi-ticket"
+          [routerLink]="['/my/reservations']"
+          class="toolbar-button">
+        </button>
 
-    @if (isAdmin()) {
-      <button
-        pButton
-        type="button"
-        label="Admin"
-        icon="pi pi-shield"
-        [routerLink]="['/admin/events/new']">
-      </button>
-    }
+        <button
+          pButton
+          type="button"
+          label="Account"
+          icon="pi pi-user"
+          [routerLink]="['/account']"
+          class="toolbar-button">
+        </button>
 
+        <button
+          pButton
+          type="button"
+          label="Logout"
+          icon="pi pi-sign-out"
+          (click)="logout()"
+          class="toolbar-button">
+        </button>
+      }
 
+      @if (isAdmin()) {
+        <button
+          pButton
+          type="button"
+          label="Admin"
+          icon="pi pi-shield"
+          [routerLink]="['/admin/events']"
+          class="toolbar-button">
+        </button>
+      }
+    </div>
   </ng-template>
 </p-toolbar>

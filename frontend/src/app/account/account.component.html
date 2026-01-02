@@ -1,0 +1,37 @@
+<p-card header="Account">
+  <p-message *ngIf="errorMsg" severity="error" [text]="errorMsg"></p-message>
+  <p-message *ngIf="successMsg" severity="success" [text]="successMsg"></p-message>
+
+  <div *ngIf="linkMode" class="p-fluid form-row">
+    <p-message severity="info" text="An account with your Google email exists. Enter your password to link Google to your account."></p-message>
+
+    <label>Email</label>
+    <p>{{ linkEmail }}</p>
+
+    <p-divider></p-divider>
+
+    <label for="linkpass">Current password</label>
+    <p-password id="linkpass" [(ngModel)]="linkPassword" [feedback]="false" [toggleMask]="true" style="width:100%"></p-password>
+
+    <p-message *ngIf="linkError" severity="error" [text]="linkError"></p-message>
+    <p-message *ngIf="linkSuccess" severity="success" [text]="linkSuccess"></p-message>
+
+    <p-divider></p-divider>
+
+    <button pButton type="button" label="Sign in & Link Google" (click)="linkWithPassword()" [disabled]="linking"></button>
+  </div>
+
+  <div *ngIf="!linkMode" class="p-fluid form-row">
+    <label for="newpass">New password</label>
+    <p-password id="newpass" type="password" [(ngModel)]="password" [feedback]="true" [toggleMask]="true" style="width:100%"></p-password>
+
+    <p-divider></p-divider>
+
+    <label for="confpass">Confirm password</label>
+    <p-password id="confpass" type="password" [(ngModel)]="password2" [feedback]="false" [toggleMask]="true" style="width:100%"></p-password>
+
+    <p-divider></p-divider>
+
+    <button pButton type="button" label="Set password" (click)="setPassword()"></button>
+  </div>
+</p-card>

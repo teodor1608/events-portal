@@ -94,7 +94,6 @@ export class AdminCreateEventComponent {
     this.api.createEvent(payload).subscribe({
       next: () => {
         this.successMsg = 'Event created.';
-        // optionally go back to events list
         // this.router.navigateByUrl('/events');
       },
       error: (err) => {

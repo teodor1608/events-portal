@@ -1,0 +1,16 @@
+<p-card header="Payment Cancelled">
+  <p-message
+    severity="warn"
+    text="You cancelled the payment. Your reservation is still on hold, but unpaid.">
+  </p-message>
+
+  <p-divider></p-divider>
+
+  <button
+    pButton
+    type="button"
+    label="Back to my reservations"
+    icon="pi pi-ticket"
+    (click)="goBack()">
+  </button>
+</p-card>

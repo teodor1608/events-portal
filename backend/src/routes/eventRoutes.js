@@ -17,6 +17,88 @@ const ALLOWED_TYPES = new Set([
 
 const ALLOWED_STATUS = new Set(["DRAFT", "SCHEDULED", "CANCELLED", "COMPLETED"]);
 
+// GET /api/events/admin  (ADMIN only)
+router.get("/admin", requireAuth, requireRole("ADMIN"), async (req, res) => {
+  try {
+    const eventRepo = AppDataSource.getRepository("Event");
+    const events = await eventRepo.find({
+      order: { startsAt: "DESC" },
+    });
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PUT /api/events/:id  (ADMIN only)
+router.put("/:id", requireAuth, requireRole("ADMIN"), async (req, res) => {
+  try {
+    const eventRepo = AppDataSource.getRepository("Event");
+    const id = parseInt(req.params.id, 10);
+
+    let event = await eventRepo.findOne({ where: { id } });
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    const {
+      title,
+      description,
+      type,
+      startsAt,
+      endsAt,
+      city,
+      venue,
+      imageUrl,
+      priceCents,
+      totalSeats,
+      status,
+      isPublished,
+    } = req.body;
+
+    event.title = title ?? event.title;
+    event.description = description ?? event.description;
+    event.type = type ?? event.type;
+    event.startsAt = startsAt ? new Date(startsAt) : event.startsAt;
+    event.endsAt = endsAt ? new Date(endsAt) : event.endsAt;
+    event.city = city ?? event.city;
+    event.venue = venue ?? event.venue;
+    event.imageUrl = imageUrl ?? event.imageUrl;
+    event.priceCents = priceCents ?? event.priceCents;
+    event.totalSeats = totalSeats ?? event.totalSeats;
+    event.status = status ?? event.status;
+    event.isPublished = typeof isPublished === "boolean" ? isPublished : event.isPublished;
+
+    event = await eventRepo.save(event);
+
+    res.json(event);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/events/admin/:id  (ADMIN only, sees all statuses)
+router.get("/admin/:id", requireAuth, requireRole("ADMIN"), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid event id" });
+    }
+
+    const eventRepo = AppDataSource.getRepository("Event");
+    const event = await eventRepo.findOne({ where: { id } });
+
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    res.json(event);
+  } catch (error) {
+    console.error("GET /api/events/admin/:id error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ADMIN: Create event
 router.post("/", requireAuth, requireRole("ADMIN"), async (req, res) => {
   try {
@@ -124,97 +206,36 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ADMIN: Update event
-router.put("/:id", requireAuth, requireRole("ADMIN"), async (req, res) => {
-  try {
-    const eventRepo = AppDataSource.getRepository("Event");
-    const event = await eventRepo.findOne({
-      where: { id: parseInt(req.params.id) },
-    });
-
-    if (!event) {
-      return res.status(404).json({ error: "Event not found" });
-    }
-
-    const {
-      title,
-      description,
-      type,
-      startsAt,
-      endsAt,
-      city,
-      venue,
-      imageUrl,
-      priceCents,
-      totalSeats,
-      status,
-      isPublished,
-    } = req.body;
-
-    if (type != null && !ALLOWED_TYPES.has(type)) {
-      return res.status(400).json({ error: "Invalid type" });
-    }
-    if (status != null && !ALLOWED_STATUS.has(status)) {
-      return res.status(400).json({ error: "Invalid status" });
-    }
-
-    // seat rule: totalSeats cannot be set below already reserved/sold
-    if (totalSeats != null) {
-      const newTotal = parseInt(totalSeats, 10);
-      if (Number.isNaN(newTotal) || newTotal < 0) {
-        return res.status(400).json({ error: "totalSeats must be a non-negative integer" });
-      }
-
-      const reservedOrSold = event.totalSeats - event.availableSeats;
-      if (newTotal < reservedOrSold) {
-        return res.status(400).json({
-          error: `totalSeats cannot be below already reserved/sold (${reservedOrSold})`,
-        });
-      }
-
-      const diff = newTotal - event.totalSeats;
-      event.totalSeats = newTotal;
-      event.availableSeats = Math.min(newTotal, event.availableSeats + diff);
-    }
-
-    if (title != null) event.title = title;
-    if (description !== undefined) event.description = description;
-    if (type != null) event.type = type;
-    if (startsAt != null) event.startsAt = new Date(startsAt);
-    if (endsAt !== undefined) event.endsAt = endsAt ? new Date(endsAt) : null;
-    if (city != null) event.city = city;
-    if (venue != null) event.venue = venue;
-    if (imageUrl !== undefined) event.imageUrl = imageUrl;
-    if (priceCents != null) event.priceCents = parseInt(priceCents, 10) || 0;
-
-    event.currency = "EUR"; // keep fixed
-    if (status != null) event.status = status;
-    if (isPublished != null) event.isPublished = Boolean(isPublished);
-
-    const saved = await eventRepo.save(event);
-    res.json(saved);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ADMIN: Delete event
 router.delete("/:id", requireAuth, requireRole("ADMIN"), async (req, res) => {
   try {
+    const id = parseInt(req.params.id, 10);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ error: "Invalid event id" });
+    }
+
     const eventRepo = AppDataSource.getRepository("Event");
-    const event = await eventRepo.findOne({
-      where: { id: parseInt(req.params.id) },
-    });
+    let event = await eventRepo.findOne({ where: { id } });
 
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    await eventRepo.remove(event);
-    res.status(204).send();
+    if( event.status === "CANCELLED" && !event.isPublished ) {
+      // hard delete
+      await eventRepo.remove(event);
+    }else {
+      // soft delete: hide it from public + mark cancelled
+      event.isPublished = false;
+      event.status = "CANCELLED";
+      await eventRepo.save(event);
+    }
+
+    return res.json({ success: true });
   } catch (error) {
+    console.error("DELETE /api/events/:id error:", error);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 module.exports = router;

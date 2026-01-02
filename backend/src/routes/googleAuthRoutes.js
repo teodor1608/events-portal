@@ -2,7 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const AppDataSource = require("../config/database");
-const { JWT_SECRET } = require("../middleware/auth");
+const { JWT_SECRET, requireAuth } = require("../middleware/auth");
 const axios = require("axios");
 
 const router = express.Router();
@@ -42,7 +42,7 @@ router.post("/google", async (req, res) => {
       });
       user = await userRepo.save(user);
     } else if (!user.googleId) {
-      // link google to existing email account (simple link)
+      // Link Google account to existing user by setting `user.googleId`.
       user.googleId = googleId;
       user = await userRepo.save(user);
     }
@@ -73,7 +73,7 @@ router.post("/google/redirect", async (req, res) => {
     if (!GOOGLE_CLIENT_SECRET) return res.status(500).json({ error: "Missing GOOGLE_CLIENT_SECRET" });
     if (!GOOGLE_REDIRECT_URI) return res.status(500).json({ error: "Missing GOOGLE_REDIRECT_URI" });
 
-    // Exchange authorization code -> tokens (includes id_token)
+    // Exchange authorization code
     const tokenRes = await axios.post("https://oauth2.googleapis.com/token", new URLSearchParams({
       code,
       client_id: GOOGLE_CLIENT_ID,
@@ -87,8 +87,6 @@ router.post("/google/redirect", async (req, res) => {
     const idToken = tokenRes.data?.id_token;
     if (!idToken) return res.status(401).json({ error: "No id_token returned from Google" });
 
-    // Reuse your existing idToken logic by calling the same verify path:
-    // Easiest: just run the verify step inline again here (copy from your /google handler)
     const ticket = await client.verifyIdToken({
       idToken,
       audience: GOOGLE_CLIENT_ID,
@@ -104,7 +102,11 @@ router.post("/google/redirect", async (req, res) => {
       (await userRepo.findOne({ where: { googleId } })) ||
       (await userRepo.findOne({ where: { email } }));
 
+    let linked = false;
+    let created = false;
+
     if (!user) {
+      created = true;
       user = userRepo.create({
         email,
         googleId,
@@ -112,23 +114,68 @@ router.post("/google/redirect", async (req, res) => {
         passwordHash: null,
       });
       user = await userRepo.save(user);
-    } else if (!user.googleId) {
-      user.googleId = googleId;
-      user = await userRepo.save(user);
+
+      const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      // New user created, return token and flags
+      return res.json({ token, linked: false, created: true, hasPassword: !!user.passwordHash });
     }
 
+    if (!user.googleId) {
+      // There is an existing user with this email but no googleId.
+      // Do NOT auto-link here — ask the user to confirm linking by signing in.
+      // Return a signal to the client along with the idToken so the client can
+      // offer a confirmation flow. The client should then prompt the user to
+      // sign in with their local password and call POST /api/auth/google/link
+      // with the same idToken to perform the link.
+      return res.json({ needsLink: true, email: user.email, idToken });
+    }
+
+    // User already linked; proceed to sign a token and return
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    res.json({ token });
+    res.json({ token, linked: true, created: false, hasPassword: !!user.passwordHash });
   } catch (err) {
     console.error(err?.response?.data || err?.message || err);
     res.status(401).json({ error: "Google redirect login failed" });
   }
 });
 
+// POST /api/auth/google/link  { idToken }  (authenticated users can link Google to their account)
+router.post("/google/link", requireAuth, async (req, res) => {
+  try {
+    const { idToken } = req.body || {};
+    if (!idToken) return res.status(400).json({ error: "Missing idToken" });
+    if (!GOOGLE_CLIENT_ID) return res.status(500).json({ error: "Missing GOOGLE_CLIENT_ID" });
+
+    const ticket = await client.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_ID });
+    const payload = ticket.getPayload();
+    const googleId = payload.sub;
+    const email = payload.email;
+
+    // Ensure the token email matches the authenticated user email to prevent linking another account
+    if (email !== req.user.email) return res.status(403).json({ error: "Google account email does not match authenticated user" });
+
+    const userRepo = AppDataSource.getRepository("User");
+    const user = await userRepo.findOne({ where: { id: req.user.id } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    user.googleId = googleId;
+    await userRepo.save(user);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err?.message || err);
+    res.status(401).json({ error: "Invalid Google token" });
+  }
+});
 
 module.exports = router;

@@ -15,6 +15,7 @@
     "jsonwebtoken": "^9.0.3",
     "reflect-metadata": "^0.2.2",
     "sqlite3": "^5.1.7",
+    "stripe": "^20.1.0",
     "typeorm": "^0.3.27"
   }
 }

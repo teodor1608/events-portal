@@ -1,0 +1,81 @@
+<p-card header="Admin · Events" subheader="Manage all events">
+  <p *ngIf="errorMsg">{{ errorMsg }}</p>
+
+  <button
+    pButton
+    type="button"
+    label="Create new event"
+    icon="pi pi-plus"
+    (click)="goNew()">
+  </button>
+
+  <p-divider></p-divider>
+
+  <div class="p-fluid">
+    <div class="p-formgrid p-grid">
+      <div class="p-field p-col-12 p-md-4">
+        <label>Filter</label>
+        <p-select
+          [options]="filterOptions"
+          [(ngModel)]="filterMode"
+          optionLabel="label"
+          optionValue="value"
+          (onChange)="applyFilter()">
+        </p-select>
+      </div>
+    </div>
+  </div>
+
+  <p-divider></p-divider>
+
+  <p-table
+    [value]="events"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[5,10,20]">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Published</th>
+        <th>Seats</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-e>
+      <tr>
+        <td>{{ e.id }}</td>
+        <td>{{ e.title }}</td>
+        <td>{{ e.startsAt | date:'short' }}</td>
+        <td>
+          <p-tag [value]="e.status" [severity]="statusSeverity(e)"></p-tag>
+        </td>
+        <td>
+          <p-tag [value]="e.isPublished ? 'Yes' : 'No'" [severity]="pubSeverity(e)"></p-tag>
+        </td>
+        <td>{{ e.availableSeats }} / {{ e.totalSeats }}</td>
+        <td>
+          <button
+            pButton
+            type="button"
+            label="Edit"
+            icon="pi pi-pencil"
+            (click)="goEdit(e)">
+          </button>
+
+          <button
+            pButton
+            type="button"
+            label="Delete"
+            icon="pi pi-trash"
+            class="p-button-danger p-button-text"
+            (click)="delete(e)">
+          </button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>

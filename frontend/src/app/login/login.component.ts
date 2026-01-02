@@ -29,6 +29,25 @@ import { environment } from '../environments/environment';
     MessageModule
 ],
   templateUrl: './login.component.html',
+  styles: [
+    `
+    .auth-page { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 64px); padding:2rem; }
+    .auth-card { width:420px; max-width:100%; }
+    .form-row label { margin-top:0.75rem; display:block; }
+    .form-row .p-inputtext, .form-row .p-password { margin-bottom:0.75rem; }
+    .form-row button { margin-top:0.75rem; }
+
+    .login-google { display:flex; flex-direction:column; gap:0.75rem; align-items:flex-start; margin-bottom:0.75rem; }
+
+    .tab-headers { display:flex; gap:0.5rem; margin-bottom:1rem; }
+    .tab-btn { min-width:110px; }
+    .tab-btn[aria-pressed="true"] { font-weight:700; background:rgba(76,175,80,0.06); }
+
+    @media (max-width:600px) {
+      .auth-card { width:100%; }
+    }
+    `,
+  ],
 })
 export class LoginComponent implements OnInit {
   // Local login
@@ -42,6 +61,9 @@ export class LoginComponent implements OnInit {
 
   errorMsg = '';
 
+  // 0 = Login, 1 = Register
+  activeTab = 0;
+
   constructor(private api: AuthApiService, private router: Router) {}
 
   ngOnInit(): void {
@@ -51,7 +73,7 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  // Redirect-based Google login (no popup)
+  // Redirect-based Google login
   loginWithGoogleRedirect(): void {
     const params = new URLSearchParams({
       client_id: environment.googleClientId,

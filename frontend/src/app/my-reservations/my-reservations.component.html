@@ -1,0 +1,54 @@
+<p-card header="My Reservations" subheader="Your tickets and holds">
+  <p-message *ngIf="errorMsg" severity="error" [text]="errorMsg"></p-message>
+
+  <p *ngIf="!loading && reservations.length === 0 && !errorMsg">
+    You have no reservations yet.
+  </p>
+
+  <p-table
+    *ngIf="reservations.length > 0"
+    [value]="reservations"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="5">
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Event</th>
+            <th>Date</th>
+            <th>Qty</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </ng-template>
+
+
+    <ng-template pTemplate="body" let-r>
+        <tr>
+            <td>
+            <a [routerLink]="['/events', r.eventId]">
+                {{ eventTitle(r) }}
+            </a>
+            </td>
+            <td>{{ eventDate(r) }}</td>
+            <td>{{ r.qty }}</td>
+            <td>
+            <p-tag [value]="r.status" [severity]="statusSeverity(r)"></p-tag>
+            </td>
+            <td>
+            <button
+                *ngIf="r.status === 'HELD'"
+                pButton
+                type="button"
+                label="Pay now"
+                icon="pi pi-credit-card"
+                (click)="payNow(r)">
+            </button>
+            </td>
+        </tr>
+    </ng-template>
+  </p-table>
+
+  <p-divider></p-divider>
+
+  <button pButton type="button" label="Back to events" icon="pi pi-arrow-left" [routerLink]="['/events']"></button>
+</p-card>

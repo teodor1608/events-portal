@@ -20,7 +20,7 @@ module.exports = new EntitySchema({
       nullable: true,
     },
 
-    // fixed categories enforce in routes/services
+    // fixed categories
     type: {
       type: "varchar",
       nullable: false,

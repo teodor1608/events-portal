@@ -15,7 +15,7 @@ export interface Event {
   title: string;
   description?: string | null;
   type: EventType;
-  startsAt: string;   // ISO string
+  startsAt: string;
   endsAt?: string | null;
   city: string;
   venue: string;
@@ -65,21 +65,52 @@ export class ApiService {
     return this.http.post<Event>(`${API_URL}/events`, event);
   }
 
-  updateEvent(id: number, event: Partial<Event>): Observable<Event> {
-    return this.http.put<Event>(`${API_URL}/events/${id}`, event);
+  getAdminEvents() {
+    return this.http.get<any[]>(`${API_URL}/events/admin`);
   }
 
-  deleteEvent(id: number): Observable<void> {
-    return this.http.delete<void>(`${API_URL}/events/${id}`);
+  getAdminEvent(id: number) {
+    return this.http.get<any>(`${API_URL}/events/admin/${id}`);
   }
 
-  holdReservation(eventId: number, qty: number): Observable<Reservation> {
+
+  updateEvent(id: number, payload: any) {
+    return this.http.put<any>(`${API_URL}/events/${id}`, payload);
+  }
+
+  deleteEvent(id: number) {
+    return this.http.delete<{ success: boolean }>(`${API_URL}/events/${id}`);
+  }
+
+  createReservation(eventId: number, qty: number): Observable<Reservation> {
     return this.http.post<Reservation>(`${API_URL}/reservations`, { eventId, qty });
   }
 
   getMyReservations(): Observable<Reservation[]> {
     return this.http.get<Reservation[]>(`${API_URL}/users/me/reservations`);
   }
+
+  createCheckoutSession(reservationId: number) {
+    return this.http.post<{ url: string }>(
+      `${API_URL}/payments/create-checkout-session`,
+      { reservationId }
+    );
+  }
+
+  confirmPayment(sessionId: string) {
+    return this.http.get<{ status: string }>(
+      `${API_URL}/payments/confirm`,
+      {
+        params: { session_id: sessionId },
+      }
+    );
+  }
+
+  // Account-related actions
+  setPassword(password: string) {
+    return this.http.post(`${API_URL}/auth/set-password`, { password });
+  }
+
 }
 
 @Injectable({
@@ -105,6 +136,15 @@ export class AuthApiService {
     `${API_URL}/auth/google/redirect`,
       { code }
     );
+  }
+
+  // Link a Google idToken to the currently authenticated user
+  linkGoogle(idToken: string) {
+    return this.http.post(`${API_URL}/auth/google/link`, { idToken });
+  }
+
+  setPassword(password: string) {
+    return this.http.post(`${API_URL}/auth/set-password`, { password });
   }
 
 }

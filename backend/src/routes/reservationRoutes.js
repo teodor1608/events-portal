@@ -31,7 +31,6 @@ router.post("/", requireAuth, async (req, res) => {
 
     const event = await eventRepo.findOne({
       where: { id: parseInt(eventId, 10) },
-      lock: { mode: "pessimistic_write" },
     });
 
     if (!event || !event.isPublished || event.status === "CANCELLED") {
@@ -46,9 +45,7 @@ router.post("/", requireAuth, async (req, res) => {
     event.availableSeats -= quantity;
     await eventRepo.save(event);
 
-    const holdExpiresAt = new Date(
-      Date.now() + HOLD_MINUTES * 60 * 1000
-    );
+    const holdExpiresAt = new Date(Date.now() + HOLD_MINUTES * 60 * 1000);
 
     const reservation = reservationRepo.create({
       eventId: event.id,
