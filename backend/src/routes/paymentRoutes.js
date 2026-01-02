@@ -10,6 +10,7 @@ const stripe = new Stripe(stripeSecretKey);
 
 const successUrl = process.env.STRIPE_SUCCESS_URL || "http://localhost:4200/payment/success";
 const cancelUrl = process.env.STRIPE_CANCEL_URL || "http://localhost:4200/payment/cancel";
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 // POST /api/payments/create-checkout-session
 // body: { reservationId }
@@ -109,18 +110,54 @@ router.get("/confirm", requireAuth, async (req, res) => {
       return res.status(404).json({ error: "Reservation not found" });
     }
 
-    if (reservation.status === "PAID") {
-      return res.json({ status: "PAID" });
-    }
-
-    reservation.status = "PAID";
-    await reservationRepo.save(reservation);
-
-    return res.json({ status: "PAID" });
+    return res.json({ status: reservation.status });
   } catch (err) {
     console.error("Stripe confirm error:", err);
     return res.status(500).json({ error: "Failed to confirm payment" });
   }
 });
+
+
+// POST /api/payments/webhook 
+router.post("/webhook", async (req, res) => {
+  const sig = req.headers["stripe-signature"];
+
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error("Stripe webhook signature error:", err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+
+    const reservationId = session.metadata?.reservationId;
+    const userId = session.metadata?.userId;
+
+    if (reservationId && userId) {
+      try {
+        const reservationRepo = AppDataSource.getRepository("Reservation");
+
+        const reservation = await reservationRepo.findOne({
+          where: { id: parseInt(reservationId, 10) },
+        });
+
+        if (reservation && reservation.status !== "PAID") {
+          reservation.status = "PAID";
+          await reservationRepo.save(reservation);
+          console.log(`Reservation ${reservation.id} marked PAID via webhook`);
+        }
+      } catch (err) {
+        console.error("Webhook reservation update error:", err);
+      }
+    }
+  }
+
+  res.json({ received: true });
+});
+
 
 module.exports = router;
